@@ -82,3 +82,4 @@ coverage.xml
 
 # Translations
 *.mo
+db.sqlite3

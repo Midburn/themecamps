@@ -2,13 +2,13 @@ from django.db import models
 
 # User - a real person with midburn profile.
 class User(models.Model):
-    email = models.CharField(unique=True)
-    facebook = models.CharField()
-    first_name_he = models.CharField()
-    last_name_he = models.CharField()
-    first_name_en = models.CharField()
-    last_name_en = models.CharField()
-    phone = models.Charfield()
+    email = models.CharField(unique=True, max_length=254)
+    facebook = models.CharField(max_length=254)
+    first_name_he = models.CharField(max_length=50)
+    last_name_he = models.CharField(max_length=50)
+    first_name_en = models.CharField(max_length=50)
+    last_name_en = models.CharField(max_length=50)
+    phone = models.CharField(max_length=50)
 
 
 CAMPSTATUS = (
@@ -23,9 +23,9 @@ class Camp(models.Model):
     camp_name_en = models.CharField(max_length=50, unique=True)
     camp_desc_he = models.TextField()
     camp_desc_en = models.TextField()
-    main_contact = models.ForeigKey(User)
-    moop_contact = models.ForeignKey(User)
-    safety_contact = models.ForeignKey(User)
+    main_contact = models.ForeignKey(User, related_name="main_contact")
+    moop_contact = models.ForeignKey(User, related_name="moop_contact")
+    safety_contact = models.ForeignKey(User, related_name="safety_contact")
     camp_status = models.IntegerField(choices=CAMPSTATUS)
     is_published = models.BooleanField()
 
@@ -45,25 +45,25 @@ CAMPTIMES = (
 )
 NOISE_LEVELS = (
     (1,'quiet'),
-    (2,'medium')
+    (2,'medium'),
     (3,'noisy'),
-    (4,'very noisy')
+    (4,'very noisy'),
 )
 
 class CampLocation(models.Model): # Can be part of camp, but for better modularity
     camp=models.OneToOneField(Camp)
     camp_type=models.IntegerField(choices=CAMPTYPES)
-    camp_type_other=models.Textfield()
-    camp_activity_time=models.CommaSeparatedIntegerField(choices=CAMPTIMES)
+    camp_type_other=models.TextField()
+    camp_activity_time=models.CommaSeparatedIntegerField(choices=CAMPTIMES, max_length=64)
     child_friendly=models.BooleanField()
-    noise_level=models.IntegerField(choises=NOISE_LEVELS)
+    noise_level=models.IntegerField(choices=NOISE_LEVELS)
     public_activity_area_sqm=models.IntegerField()
     public_activity_area_desc=models.TextField()
     support_art=models.BooleanField()
     location_comments=models.TextField()
     # These 3 will be set by mikumation
-    camp_location_street=models.Charfield()
-    camp_location_street_time=models.Charfield()
+    camp_location_street=models.CharField(max_length=100)
+    camp_location_street_time=models.CharField(max_length=100)
     camp_location_area=models.IntegerField()
     # Arrival
     arriving_at=models.DateTimeField()
@@ -72,34 +72,29 @@ class CampLocation(models.Model): # Can be part of camp, but for better modulari
     has_deconst_team=models.BooleanField()
     has_gifting=models.BooleanField()
     has_leds=models.BooleanField()
+    # Neighbour Camps
+    requested_nearby_camps=models.ManyToManyField(Camp, related_name="requested_nearby_camps")
 
 CAMP_MEMBERSHIP_STATUS = (
     (1,'not a member'),
     (2,'awaiting approval'),
     (3,'approved'),
 )
-class CampMember(Models.Model):
+class CampMember(models.Model):
     camp=models.ForeignKey(Camp)
     user=models.ForeignKey(User)
     status=models.IntegerField(choices=CAMP_MEMBERSHIP_STATUS)
     has_ticket=models.BooleanField()
     early_arrival=models.BooleanField()
+    is_editor=models.BooleanField()
 
-class CampEditor(Models.Model):
-    camp=models.ForeignKey(Camp)
-    user=models.ForeignKey(User)
-
-class CampSafety(Models.Model):
+class CampSafety(models.Model):
     camp=models.OneToOneField(Camp)
     have_art=models.BooleanField()
     installation_over_2m=models.BooleanField()
     # Safety checklist:
     is_gas_2m_from_stove=models.BooleanField()
     is_electricity_not_near_water=models.BooleanField()
-
-class CampLocationNeighbours(models.Model):
-    requesting_camp=ForeignKey(Camp)
-    requested_camp=ForeignKey(Camp)
 
 ACTIVITY_TYPES = (
     (1, 'workshop'),
@@ -118,8 +113,8 @@ class Workshop(models.Model):
     activity_name_en=models.CharField(max_length=50)
     activity_desc_he=models.TextField()
     activity_desc_en=models.TextField()
-    activity_datetime=models.DatetimeField()
-    activity_type=models.IntegerField(choises=ACTIVITY_TYPES)
+    activity_datetime=models.DateTimeField()
+    activity_type=models.IntegerField(choices=ACTIVITY_TYPES)
     activity_type_other=models.TextField()
     adult_only=models.BooleanField()
     child_friendly=models.BooleanField()
